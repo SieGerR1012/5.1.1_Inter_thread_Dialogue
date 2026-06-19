@@ -1,24 +1,29 @@
-void main() throws InterruptedException{
-    System.out.println("СОздание потоков...");
+void main() throws InterruptedException, ExecutionException {
+    ExecutorService pool =
+            Executors.newFixedThreadPool(
+                    Runtime.getRuntime()
+                            .availableProcessors()
+            );
 
-    // Создаем группу потоков
-    ThreadGroup group = new ThreadGroup("Workers");
+    List<Callable<Integer>> tasks = List.of(
+            new MessageTask("поток 1"),
+            new MessageTask("поток 2"),
+            new MessageTask("поток 3"),
+            new MessageTask("поток 4")
+    );
 
-    // СОздание потоков
-    MyThread t1 = new MyThread(group, "поток 1");
-    MyThread t2 = new MyThread(group, "поток 2");
-    MyThread t3 = new MyThread(group, "поток 3");
-    MyThread t4 = new MyThread(group, "поток 4");
+    System.out.println("Запуск задач...");
 
-    // Запуск потоков
-    t1.start();
-    t2.start();
-    t3.start();
-    t4.start();
+    List<Future<Integer>> results = pool.invokeAll(tasks);
 
-    Thread.sleep(15000); // Главный поток спит 15 секунд
+    System.out.println("\nРезультаты:");
 
-    System.out.println("\nЗавершение всех потоков!");
+    for (Future<Integer> future : results) {
+        System.out.println(
+                "Выведено сообщений: "
+                        + future.get()
+        );
+    }
 
-    group.interrupt(); // Вызовом завершения всех групп потоков
+    pool.shutdown(); // Вызовом завершения всех групп потоков
 }
